@@ -1,0 +1,149 @@
+private with Ada.Containers.Vectors;
+private with Ada.Strings.Unbounded;
+
+package Tropos is
+
+   type Configuration is tagged private;
+
+   Empty_Config : constant Configuration;
+
+   function New_Config (Name : String) return Configuration;
+
+   procedure Add (To_Config : in out Configuration;
+                  Child     : in     Configuration);
+
+   procedure Add (To_Config : in out Configuration;
+                  Name      : in     String;
+                  Value     : in     String);
+
+   function Get (From_Config : Configuration;
+                 Field_Name  : String)
+                 return String;
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String;
+                 Default_Value : String)
+                 return String;
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String)
+                 return Integer;
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String)
+                 return Float;
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String;
+                 Default_Value : Float)
+                 return Float;
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String)
+                 return Long_Float;
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String;
+                 Default_Value : Long_Float)
+                 return Long_Float;
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String)
+                 return Boolean;
+
+   function Get (From_Config : Configuration;
+                 Field_Index : Positive)
+                 return String;
+
+   function Get (From_Config : Configuration;
+                 Field_Index : Positive)
+                 return Integer;
+
+   function Get (From_Config : Configuration;
+                 Field_Index : Positive)
+                 return Float;
+
+   function Value (Of_Config : Configuration)
+                   return String;
+
+   function Value (Of_Config : Configuration)
+                   return Integer;
+
+   function Value (Of_Config : Configuration)
+                   return Float;
+
+   generic
+      type Field_Type is private;
+      with function From_String (Text : String) return Field_Type;
+   procedure Configure
+     (Config   : in     Configuration;
+      Name     : in     String;
+      Field    :    out Field_Type);
+
+   generic
+      type Structure_Type is private;
+      with procedure Configure (Item    : in out Structure_Type;
+                                Config  : in     Configuration)
+         is <>;
+   procedure Configure_Structure
+     (Config    : in     Configuration;
+      Name      : in     String;
+      Structure :    out Structure_Type);
+
+   procedure Configure_Container
+     (Config    : in     Configuration;
+      Add       : not null access procedure (Config : Configuration));
+
+   generic
+      type Enum is (<>);
+   function Get_Enum
+     (Config   : in     Configuration;
+      Name     : in     String)
+      return Enum;
+
+   function Config_Name
+     (Item : Configuration)
+     return String;
+
+   type Cursor is private;
+   No_Element : constant Cursor;
+
+   function First (Item : Configuration) return Cursor;
+   function Element (Item : Cursor) return Configuration;
+   procedure Next (Item : in out Cursor);
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   function Child (Of_Config  : Configuration;
+                   Child_Name : String)
+                   return Configuration;
+
+   function Contains (Config : Configuration;
+                      Name   : String)
+                      return Boolean;
+
+   function Child_Count (Config : Configuration) return Natural;
+
+private
+
+   type Configuration_Access is access all Configuration;
+
+   package Configuration_Vector is
+      new Ada.Containers.Vectors (Positive, Configuration_Access);
+
+   type Configuration is tagged
+      record
+         Name     : Ada.Strings.Unbounded.Unbounded_String;
+         Children : access Configuration_Vector.Vector;
+      end record;
+
+   type Cursor is new Configuration_Vector.Cursor;
+
+   Empty_Config : constant Configuration :=
+                    (Ada.Strings.Unbounded.Null_Unbounded_String,
+                     null);
+
+   No_Element : constant Cursor :=
+                  Cursor (Configuration_Vector.No_Element);
+
+end Tropos;
