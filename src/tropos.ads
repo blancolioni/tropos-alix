@@ -124,6 +124,11 @@ package Tropos is
 
    function Child_Count (Config : Configuration) return Natural;
 
+   procedure Iterate
+     (Config   : Configuration;
+      Child_Name : String;
+      Process    : not null access procedure (Position : Cursor));
+
 private
 
    type Configuration_Access is access all Configuration;
