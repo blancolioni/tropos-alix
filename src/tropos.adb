@@ -351,6 +351,25 @@ package body Tropos is
         (Configuration_Vector.Cursor (Position));
    end Has_Element;
 
+   -------------
+   -- Iterate --
+   -------------
+
+   procedure Iterate
+     (Config   : Configuration;
+      Child_Name : String;
+      Process    : not null access procedure (Position : Cursor))
+   is
+      It : Cursor := Config.First;
+   begin
+      while Has_Element (It) loop
+         if Element (It).Config_Name = Child_Name then
+            Process (It);
+         end if;
+         Next (It);
+      end loop;
+   end Iterate;
+
    ----------------
    -- New_Config --
    ----------------
