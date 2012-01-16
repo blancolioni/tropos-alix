@@ -30,6 +30,11 @@ package Tropos is
                  return Integer;
 
    function Get (From_Config   : Configuration;
+                 Field_Name    : String;
+                 Default_Value : Integer)
+                 return Integer;
+
+   function Get (From_Config   : Configuration;
                  Field_Name    : String)
                  return Float;
 
@@ -49,6 +54,11 @@ package Tropos is
 
    function Get (From_Config   : Configuration;
                  Field_Name    : String)
+                 return Boolean;
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String;
+                 Default_Value : Boolean)
                  return Boolean;
 
    function Get (From_Config : Configuration;
@@ -101,6 +111,14 @@ package Tropos is
       Name     : in     String)
       return Enum;
 
+   generic
+      type Enum is (<>);
+      Default : Enum;
+   function Get_Enum_With_Default
+     (Config   : in     Configuration;
+      Name     : in     String)
+      return Enum;
+
    function Config_Name
      (Item : Configuration)
      return String;
@@ -118,6 +136,10 @@ package Tropos is
                    Child_Name : String)
                    return Configuration;
 
+   function Child (Of_Config  : Configuration;
+                   Index      : Positive)
+                   return Configuration;
+
    function Contains (Config : Configuration;
                       Name   : String)
                       return Boolean;
@@ -128,6 +150,12 @@ package Tropos is
      (Config   : Configuration;
       Child_Name : String;
       Process    : not null access procedure (Position : Cursor));
+
+   type Configuration_Array is array (Positive range <>) of Configuration;
+
+   function Children (Config : Configuration;
+                      Name   : String)
+                      return Configuration_Array;
 
 private
 

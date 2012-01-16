@@ -56,14 +56,50 @@ package body Tropos is
         " has no child named " & Child_Name;
    end Child;
 
+   -----------
+   -- Child --
+   -----------
+
+   function Child (Of_Config  : Configuration;
+                   Index      : Positive)
+                  return Configuration
+   is
+   begin
+      return Of_Config.Children.Element (Index).all;
+   end Child;
+
    -----------------
    -- Child_Count --
    -----------------
 
    function Child_Count (Config : Configuration) return Natural is
    begin
-      return Config.Children.Last_Index;
+      if Config.Children /= null then
+         return Config.Children.Last_Index;
+      else
+         return 0;
+      end if;
    end Child_Count;
+
+   --------------
+   -- Children --
+   --------------
+
+   function Children (Config : Configuration;
+                      Name   : String)
+                      return Configuration_Array
+   is
+      Result : Configuration_Array (1 .. Config.Child_Count);
+      Count  : Natural := 0;
+   begin
+      for I in Result'Range loop
+         if Config.Children.Element (I).Config_Name = Name then
+            Count := Count + 1;
+            Result (Count) := Config.Children.Element (I).all;
+         end if;
+      end loop;
+      return Result (1 .. Count);
+   end Children;
 
    -----------------
    -- Config_Name --
@@ -223,6 +259,24 @@ package body Tropos is
    -- Get --
    ---------
 
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String;
+                 Default_Value : Boolean)
+                 return Boolean
+   is
+      Result : constant String := From_Config.Get (Field_Name, "");
+   begin
+      if Result = "" then
+         return Default_Value;
+      else
+         return Result = "yes";
+      end if;
+   end Get;
+
+   ---------
+   -- Get --
+   ---------
+
    function Get (From_Config : Configuration;
                  Field_Name  : String)
                  return Integer
@@ -235,6 +289,23 @@ package body Tropos is
          end if;
       end loop;
       return Integer'Value (Result);
+   end Get;
+
+   ---------
+   -- Get --
+   ---------
+
+   function Get (From_Config   : Configuration;
+                 Field_Name    : String;
+                 Default_Value : Integer)
+                 return Integer
+   is
+   begin
+      if From_Config.Contains (Field_Name) then
+         return From_Config.Get (Field_Name);
+      else
+         return Default_Value;
+      end if;
    end Get;
 
    ---------
@@ -340,6 +411,23 @@ package body Tropos is
       return Enum'Value (Value);
    end Get_Enum;
 
+   ---------------------------
+   -- Get_Enum_With_Default --
+   ---------------------------
+
+   function Get_Enum_With_Default
+     (Config   : in     Configuration;
+      Name     : in     String)
+      return Enum
+   is
+      Value : constant String := Config.Get (Name, "");
+   begin
+      if Value /= "" then
+         return Enum'Value (Value);
+      else
+         return Default;
+      end if;
+   end Get_Enum_With_Default;
    -----------------
    -- Has_Element --
    -----------------
