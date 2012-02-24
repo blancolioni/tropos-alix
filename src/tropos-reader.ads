@@ -17,8 +17,9 @@ package Tropos.Reader is
    function Read_Indirect_Config (Path : String)
                                   return Configuration;
 
-   function Read_CSV_Config (Path      : String;
-                             Separator : Character := ',')
+   function Read_CSV_Config (Path        : String;
+                             Header_Line : Boolean := True;
+                             Separator   : Character := ',')
                              return Configuration;
 
 end Tropos.Reader;
