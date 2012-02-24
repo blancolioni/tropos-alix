@@ -1,4 +1,5 @@
 with Ada.Directories;
+with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
@@ -62,12 +63,14 @@ package body Tropos.Reader is
    -----------------
 
    function Read_Config (Path : String) return Configuration is
+      use Tropos.Reader.Parser;
       Result : Configuration :=
         New_Config (Ada.Directories.Base_Name
                     (Ada.Directories.Simple_Name (Path)));
    begin
       Tropos.Reader.Parser.Open (Path);
       while not Tropos.Reader.Parser.End_Of_File loop
+         exit when Tok = Tok_Close_Brace;
          declare
             Child : constant Configuration := Parse_Config;
          begin
@@ -219,8 +222,9 @@ package body Tropos.Reader is
    -- Read_CSV_Config --
    ---------------------
 
-   function Read_CSV_Config (Path      : String;
-                             Separator : Character := ',')
+   function Read_CSV_Config (Path        : String;
+                             Header_Line : Boolean := True;
+                             Separator   : Character := ',')
                              return Configuration
    is
       use Ada.Strings.Unbounded;
@@ -232,6 +236,8 @@ package body Tropos.Reader is
 
       type Line_Info is
         array (Positive range <>) of Unbounded_String;
+
+      function Read_Header return Line_Info;
 
       function Next_Line return Line_Info;
 
@@ -252,30 +258,63 @@ package body Tropos.Reader is
                Start := I + 1;
             end if;
          end loop;
+         while Count < 10 loop
+            Count := Count + 1;
+            Result (Count) :=
+              To_Unbounded_String
+                (Ada.Strings.Fixed.Trim
+                     (Natural'Image (Count),
+                      Ada.Strings.Left));
+            Count := Count + 1;
+         end loop;
+
          return Result (1 .. Count);
       end Next_Line;
+
+      -----------------
+      -- Read_Header --
+      -----------------
+
+      function Read_Header return Line_Info is
+      begin
+         if Header_Line then
+            return Next_Line;
+         else
+            declare
+               Result : Line_Info (1 .. 10);
+            begin
+               for I in Result'Range loop
+                  Result (I) :=
+                    To_Unbounded_String
+                      (Ada.Strings.Fixed.Trim
+                           (Natural'Image (I),
+                            Ada.Strings.Left));
+               end loop;
+               return Result;
+            end;
+         end if;
+      end Read_Header;
 
    begin
 
       Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Path);
 
       declare
-         Headings : constant Line_Info := Next_Line;
+         Headings : constant Line_Info := Read_Header;
       begin
          while not Ada.Text_IO.End_Of_File (File) loop
             declare
                Current : constant Line_Info := Next_Line;
                Line_Config : Configuration;
             begin
-               if Current'Length = Headings'Length then
-                  Line_Config := New_Config ("item");
+               Line_Config := New_Config ("item");
 
-                  for I in Headings'Range loop
-                     Line_Config.Add (To_String (Headings (I)),
-                                      To_String (Current (I)));
-                  end loop;
-                  Result.Add (Line_Config);
-               end if;
+               for I in Current'Range loop
+                  exit when I not in Headings'Range;
+                  Line_Config.Add (To_String (Headings (I)),
+                                   To_String (Current (I)));
+               end loop;
+               Result.Add (Line_Config);
             end;
          end loop;
       end;
