@@ -116,7 +116,7 @@ package body Tropos.Reader.Parser is
                     Ch /= '{' and then Ch /= '}' and then
                     Ch /= ASCII.CR and then
                     Ch /= ASCII.HT and then
-                    Ch /= '#' and then
+                    Ch /= '#' and then Ch /= ';' and then
                     Curr_Col_Index <= Curr_Line_Length + 1
                   loop
                      Curr_Text_Length := Curr_Text_Length + 1;
@@ -125,7 +125,9 @@ package body Tropos.Reader.Parser is
                      Curr_Col_Index := Curr_Col_Index + 1;
                   end loop;
                   Curr_Token := Tok_Name;
-                  Curr_Col_Index := Curr_Col_Index - 1;
+                  if Ch /= ';' then
+                     Curr_Col_Index := Curr_Col_Index - 1;
+                  end if;
                   return;
                end if;
             end;
