@@ -1,5 +1,23 @@
 package body Tropos is
 
+   type Iterator is
+     new Configuration_Iterator_Interfaces.Reversible_Iterator
+   with record
+      Container : Configuration_Access;
+      Current   : Cursor;
+   end record;
+
+   overriding function First (Object : Iterator) return Cursor;
+   overriding function Last  (Object : Iterator) return Cursor;
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor;
+
    ---------
    -- Add --
    ---------
@@ -161,6 +179,22 @@ package body Tropos is
       Configure (Structure, Child);
    end Configure_Structure;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Configuration;
+      Position  : Cursor)
+      return Constant_Reference_Type
+   is
+      pragma Unreferenced (Container);
+      Item : constant Configuration_Access :=
+               Configuration_Vector.Element (Position.Position);
+   begin
+      return (Element => Item);
+   end Constant_Reference;
+
    --------------
    -- Contains --
    --------------
@@ -185,7 +219,7 @@ package body Tropos is
 
    function Element (Item : Cursor) return Configuration is
    begin
-      return Element (Item).all;
+      return Configuration_Vector.Element (Item.Position).all;
    end Element;
 
    -----------
@@ -197,7 +231,20 @@ package body Tropos is
       if Item.Children = null then
          return No_Element;
       else
-         return Cursor (Item.Children.First);
+         return (Position => Item.Children.First);
+      end if;
+   end First;
+
+   -----------
+   -- First --
+   -----------
+
+   overriding function First (Object : Iterator) return Cursor is
+   begin
+      if Object.Current = No_Element then
+         return Object.Container.First;
+      else
+         return Object.Current;
       end if;
    end First;
 
@@ -336,6 +383,14 @@ package body Tropos is
    is
       Result : constant String := From_Config.Get (Field_Name, "0.0");
    begin
+      for I in Result'Range loop
+         if Result (I) not in '0' .. '9' and then Result (I) /= '.'
+           and then Result (I) /= 'e' and then Result (I) /= 'E'
+           and then Result (I) /= '+' and then Result (I) /= '-'
+         then
+            return Float'Value (Result (Result'First .. I - 1));
+         end if;
+      end loop;
       return Float'Value (Result);
    end Get;
 
@@ -428,15 +483,14 @@ package body Tropos is
          return Default;
       end if;
    end Get_Enum_With_Default;
+
    -----------------
    -- Has_Element --
    -----------------
 
-   overriding
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Configuration_Vector.Has_Element
-        (Configuration_Vector.Cursor (Position));
+      return Configuration_Vector.Has_Element (Position.Position);
    end Has_Element;
 
    -------------
@@ -458,6 +512,35 @@ package body Tropos is
       end loop;
    end Iterate;
 
+   -------------
+   -- Iterate --
+   -------------
+
+   function Iterate
+     (Container : Configuration)
+      return Configuration_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+
+      V : constant Configuration_Access := Container'Unrestricted_Access;
+      Result : Iterator :=
+                 (Container => V, Current => No_Element);
+   begin
+      return Result;
+   end Iterate;
+
+   ----------
+   -- Last --
+   ----------
+
+   overriding function Last (Object : Iterator) return Cursor is
+   begin
+      if Object.Current = No_Element then
+         return (Position => Object.Container.Children.Last);
+      else
+         return Object.Current;
+      end if;
+   end Last;
+
    ----------------
    -- New_Config --
    ----------------
@@ -472,11 +555,52 @@ package body Tropos is
    -- Next --
    ----------
 
-   overriding
    procedure Next (Item : in out Cursor) is
    begin
-      Configuration_Vector.Next (Configuration_Vector.Cursor (Item));
+      Configuration_Vector.Next (Item.Position);
    end Next;
+
+   ----------
+   -- Next --
+   ----------
+
+   overriding function Next
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return (Position => Configuration_Vector.Next (Position.Position));
+   end Next;
+
+   --------------
+   -- Previous --
+   --------------
+
+   overriding function Previous
+     (Object   : Iterator;
+      Position : Cursor) return Cursor
+   is
+      pragma Unreferenced (Object);
+   begin
+      return (Position => Configuration_Vector.Previous (Position.Position));
+   end Previous;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Reference
+     (Container : aliased in out Configuration;
+      Position  : Cursor)
+      return Reference_Type
+   is
+      pragma Unreferenced (Container);
+      Item : constant Configuration_Access :=
+               Configuration_Vector.Element (Position.Position);
+   begin
+      return (Element => Item);
+   end Reference;
 
    -----------
    -- Value --
