@@ -1,9 +1,16 @@
 private with Ada.Containers.Vectors;
 private with Ada.Strings.Unbounded;
 
+with Ada.Iterator_Interfaces;
+
 package Tropos is
 
-   type Configuration is tagged private;
+   type Configuration is tagged private
+   with
+      Constant_Indexing => Constant_Reference,
+      Variable_Indexing => Reference,
+      Default_Iterator  => Iterate,
+      Iterator_Element  => Configuration;
 
    Empty_Config : constant Configuration;
 
@@ -132,6 +139,29 @@ package Tropos is
 
    function Has_Element (Position : Cursor) return Boolean;
 
+   package Configuration_Iterator_Interfaces is new
+     Ada.Iterator_Interfaces (Cursor, Has_Element);
+
+   type Constant_Reference_Type
+      (Element : not null access constant Configuration) is
+   private
+   with
+      Implicit_Dereference => Element;
+
+   type Reference_Type (Element : not null access Configuration) is private
+   with
+      Implicit_Dereference => Element;
+
+   function Constant_Reference
+     (Container : aliased Configuration;
+      Position  : Cursor) return Constant_Reference_Type;
+   pragma Inline (Constant_Reference);
+
+   function Reference
+     (Container : aliased in out Configuration;
+      Position  : Cursor) return Reference_Type;
+   pragma Inline (Reference);
+
    function Child (Of_Config  : Configuration;
                    Child_Name : String)
                    return Configuration;
@@ -150,6 +180,10 @@ package Tropos is
      (Config   : Configuration;
       Child_Name : String;
       Process    : not null access procedure (Position : Cursor));
+
+   function Iterate
+     (Container : Configuration)
+      return Configuration_Iterator_Interfaces.Reversible_Iterator'Class;
 
    type Configuration_Array is array (Positive range <>) of Configuration;
 
@@ -170,13 +204,22 @@ private
          Children : access Configuration_Vector.Vector;
       end record;
 
-   type Cursor is new Configuration_Vector.Cursor;
+   type Constant_Reference_Type
+     (Element : not null access constant Configuration) is null record;
+
+   type Reference_Type
+     (Element : not null access Configuration) is null record;
+
+   type Cursor is
+      record
+         Position : Configuration_Vector.Cursor;
+      end record;
 
    Empty_Config : constant Configuration :=
                     (Ada.Strings.Unbounded.Null_Unbounded_String,
                      null);
 
    No_Element : constant Cursor :=
-                  Cursor (Configuration_Vector.No_Element);
+                  (Position => Configuration_Vector.No_Element);
 
 end Tropos;
