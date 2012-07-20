@@ -92,11 +92,7 @@ package body Tropos is
 
    function Child_Count (Config : Configuration) return Natural is
    begin
-      if Config.Children /= null then
-         return Config.Children.Last_Index;
-      else
-         return 0;
-      end if;
+      return Config.Children.Last_Index;
    end Child_Count;
 
    --------------
@@ -228,7 +224,7 @@ package body Tropos is
 
    function First (Item : Configuration) return Cursor is
    begin
-      if Item.Children = null then
+      if Item.Children.Is_Empty then
          return No_Element;
       else
          return (Position => Item.Children.First);
@@ -548,7 +544,7 @@ package body Tropos is
    function New_Config (Name : String) return Configuration is
    begin
       return (Ada.Strings.Unbounded.To_Unbounded_String (Name),
-              new Configuration_Vector.Vector);
+              Configuration_Vector.Empty_Vector);
    end New_Config;
 
    ----------

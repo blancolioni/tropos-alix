@@ -7,40 +7,48 @@ with Tropos.Reader.Parser;
 
 package body Tropos.Reader is
 
-   function Parse_Config return Configuration;
+   procedure Parse_Config
+     (Config : out Configuration);
 
    ------------------
    -- Parse_Config --
    ------------------
 
-   function Parse_Config return Configuration is
+   procedure Parse_Config
+     (Config : out Configuration)
+   is
       use Tropos.Reader.Parser;
 
-      Result : Configuration;
       Have_Body : Boolean := Tok = Tok_Open_Brace;
    begin
       if Tok = Tok_Name or else Tok = Tok_Open_Brace then
          if Tok = Tok_Name then
-            Result := New_Config (Tok_Text);
+            Config.Name :=
+              Ada.Strings.Unbounded.To_Unbounded_String (Tok_Text);
             Next;
             if Tok = Tok_Equal then
                Next;
                Have_Body := True;
             end if;
          else
-            Result := New_Config ("");
+            Config.Name := Ada.Strings.Unbounded.Null_Unbounded_String;
          end if;
 
          if Have_Body then
             if Tok = Tok_Name then
-               Add (Result, New_Config (Tok_Text));
+               Config.Add (New_Config (Tok_Text));
                Next;
             elsif Tok = Tok_Open_Brace then
                Next;
                while not End_Of_File and then
                   Tok /= Tok_Close_Brace
                loop
-                  Add (Result, Parse_Config);
+                  declare
+                     Child : Configuration;
+                  begin
+                     Parse_Config (Child);
+                     Config.Add (Child);
+                  end;
                end loop;
                if End_Of_File then
                   Error ("missing '}' at end of file");
@@ -53,9 +61,8 @@ package body Tropos.Reader is
          end if;
       else
          Error ("missing name");
-         Result := Empty_Config;
       end if;
-      return Result;
+
    end Parse_Config;
 
    -----------------
@@ -72,9 +79,10 @@ package body Tropos.Reader is
       while not Tropos.Reader.Parser.End_Of_File loop
          exit when Tok = Tok_Close_Brace;
          declare
-            Child : constant Configuration := Parse_Config;
+            Acc   : constant Configuration_Access := new Configuration;
          begin
-            Add (Result, Child);
+            Parse_Config (Acc.all);
+            Result.Children.Append (Acc);
          end;
       end loop;
       return Result;
