@@ -201,7 +201,7 @@ private
    type Configuration is tagged
       record
          Name     : Ada.Strings.Unbounded.Unbounded_String;
-         Children : access Configuration_Vector.Vector;
+         Children : Configuration_Vector.Vector;
       end record;
 
    type Constant_Reference_Type
@@ -217,7 +217,7 @@ private
 
    Empty_Config : constant Configuration :=
                     (Ada.Strings.Unbounded.Null_Unbounded_String,
-                     null);
+                     Configuration_Vector.Empty_Vector);
 
    No_Element : constant Cursor :=
                   (Position => Configuration_Vector.No_Element);
