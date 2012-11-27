@@ -247,23 +247,42 @@ package body Tropos.Reader is
 
       function Read_Header return Line_Info;
 
-      function Next_Line return Line_Info;
+      function Next_Line
+        (Header : Boolean := False)
+         return Line_Info;
 
       ---------------
       -- Next_Line --
       ---------------
 
-      function Next_Line return Line_Info is
-         Line : constant String := Ada.Text_IO.Get_Line (File);
+      function Next_Line
+        (Header : Boolean := False)
+         return Line_Info
+      is
+         Raw_Line : constant String :=
+                      Ada.Text_IO.Get_Line (File);
+         Line     : constant String :=
+                      (if Raw_Line (Raw_Line'Last) < ' '
+                       then Raw_Line (Raw_Line'First .. Raw_Line'Last - 1)
+                       else Raw_Line);
          Result : Line_Info (1 .. Line'Last);
          Start  : Positive := 1;
+         Finish : Natural := 1;
          Count  : Natural := 0;
       begin
          for I in Line'Range loop
-            if Line (I) = Separator then
-               Count := Count + 1;
-               Result (Count) := To_Unbounded_String (Line (Start .. I - 1));
-               Start := I + 1;
+            if Line (I) = Separator
+              or else I = Line'Last
+            then
+               Finish := (if Line (I) = Separator
+                          then I - 1
+                          else I);
+               if not Header or else Finish >= Start then
+                  Count := Count + 1;
+                  Result (Count) :=
+                    To_Unbounded_String (Line (Start .. Finish));
+                  Start := I + 1;
+               end if;
             end if;
          end loop;
          while Count < 10 loop
@@ -286,7 +305,7 @@ package body Tropos.Reader is
       function Read_Header return Line_Info is
       begin
          if Header_Line then
-            return Next_Line;
+            return Next_Line (Header => True);
          else
             declare
                Result : Line_Info (1 .. 10);
