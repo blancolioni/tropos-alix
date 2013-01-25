@@ -116,9 +116,10 @@ package body Tropos.Reader is
                          Extension : String)
                          return Configuration
    is
-      Result : Configuration :=
+      Result : aliased Configuration :=
         New_Config (Ada.Directories.Base_Name
                     (Ada.Directories.Simple_Name (Path)));
+      Current : Configuration_Access := null;
 
       procedure Call_Reader
         (Directory_Entry : Ada.Directories.Directory_Entry_Type);
@@ -135,7 +136,11 @@ package body Tropos.Reader is
       is
          use Ada.Directories;
       begin
-         Result.Add (Read_Config (Full_Name (Directory_Entry)));
+         if Current = null then
+            Result.Add (Read_Config (Full_Name (Directory_Entry)));
+         else
+            Current.Add (Read_Config (Full_Name (Directory_Entry)));
+         end if;
       end Call_Reader;
 
       -------------
@@ -147,11 +152,17 @@ package body Tropos.Reader is
       is
          use Ada.Directories;
          Name : constant String := Simple_Name (Directory_Entry);
+         Local_Config : constant Configuration_Access := new Configuration;
+         Previous_Current : constant Configuration_Access := Current;
       begin
          if Name = "." or else Name = ".." then
             return;
          end if;
 
+         Local_Config.Name :=
+           Ada.Strings.Unbounded.To_Unbounded_String
+             (Simple_Name (Directory_Entry));
+         Current := Local_Config;
          Ada.Directories.Search
            (Directory      => Full_Name (Directory_Entry),
             Pattern        => "*." & Extension,
@@ -165,6 +176,12 @@ package body Tropos.Reader is
             Filter         => (Ada.Directories.Directory     => True,
                                others                        => False),
             Process        => Recurse'Access);
+         Current := Previous_Current;
+         if Current = null then
+            Result.Children.Append (Local_Config);
+         else
+            Current.Children.Append (Local_Config);
+         end if;
       end Recurse;
 
    begin
