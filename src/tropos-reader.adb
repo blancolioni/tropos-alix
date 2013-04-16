@@ -51,7 +51,8 @@ package body Tropos.Reader is
                   end;
                end loop;
                if End_Of_File then
-                  Error ("missing '}' at end of file");
+                  null;
+                  --  Error ("missing '}' at end of file");
                else
                   Next;
                end if;
