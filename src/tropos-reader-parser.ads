@@ -8,6 +8,7 @@ package Tropos.Reader.Parser is
                   Tok_Close_Brace);
 
    procedure Open (Path : String);
+   procedure Close;
 
    function Tok return Token;
    function Tok_Text return String;
