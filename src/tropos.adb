@@ -344,7 +344,9 @@ package body Tropos is
                  return Integer
    is
    begin
-      if From_Config.Contains (Field_Name) then
+      if From_Config.Contains (Field_Name)
+        and then From_Config.Get (Field_Name) /= ""
+      then
          return From_Config.Get (Field_Name);
       else
          return Default_Value;
@@ -448,6 +450,19 @@ package body Tropos is
       return Float'Value (Result);
    end Get;
 
+   ---------
+   -- Get --
+   ---------
+
+   function Get (From_Config : Configuration;
+                 Field_Index : Positive)
+                 return Long_Float
+   is
+      Result : constant String := From_Config.Get (Field_Index);
+   begin
+      return Long_Float'Value (Result);
+   end Get;
+
    --------------
    -- Get_Enum --
    --------------
@@ -544,6 +559,20 @@ package body Tropos is
    function New_Config (Name : String) return Configuration is
    begin
       return (Ada.Strings.Unbounded.To_Unbounded_String (Name),
+              Configuration_Vector.Empty_Vector);
+   end New_Config;
+
+   ----------------
+   -- New_Config --
+   ----------------
+
+   function New_Config (Index : Integer) return Configuration is
+      use Ada.Strings.Unbounded;
+   begin
+      return (Trim
+              (To_Unbounded_String
+                 (Integer'Image (Index)),
+                 Ada.Strings.Left),
               Configuration_Vector.Empty_Vector);
    end New_Config;
 
