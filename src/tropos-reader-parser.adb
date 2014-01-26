@@ -19,6 +19,15 @@ package body Tropos.Reader.Parser is
    End_Of_Line    : Boolean;
    Is_End_Of_File : Boolean;
 
+   -----------
+   -- Close --
+   -----------
+
+   procedure Close is
+   begin
+      Ada.Text_IO.Close (File);
+   end Close;
+
    -----------------
    -- End_Of_File --
    -----------------
@@ -137,7 +146,6 @@ package body Tropos.Reader.Parser is
       end loop;
 
       Is_End_Of_File := True;
-      Ada.Text_IO.Close (File);
 
    end Next;
 
