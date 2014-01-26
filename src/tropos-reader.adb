@@ -51,7 +51,8 @@ package body Tropos.Reader is
                   end;
                end loop;
                if End_Of_File then
-                  Error ("missing '}' at end of file");
+                  null;
+                  --  Error ("missing '}' at end of file");
                else
                   Next;
                end if;
@@ -85,10 +86,14 @@ package body Tropos.Reader is
             Result.Children.Append (Acc);
          end;
       end loop;
-      return Result;
+      Tropos.Reader.Parser.Close;
+     return Result;
    exception
       when Tropos.Reader.Parser.Parse_Error =>
          return Empty_Config;
+      when others =>
+         Tropos.Reader.Parser.Close;
+         raise;
    end Read_Config;
 
    -----------------
@@ -302,6 +307,12 @@ package body Tropos.Reader is
                end if;
             end if;
          end loop;
+         if Start < Line'Last then
+            Count := Count + 1;
+            Result (Count) := To_Unbounded_String (Line (Start .. Line'Last));
+            Start := Line'Last + 1;
+         end if;
+
          while Count < 10 loop
             Count := Count + 1;
             Result (Count) :=
@@ -354,9 +365,16 @@ package body Tropos.Reader is
                Line_Config := New_Config ("item");
 
                for I in Current'Range loop
-                  exit when I not in Headings'Range;
-                  Line_Config.Add (To_String (Headings (I)),
-                                   To_String (Current (I)));
+                  if I in Headings'Range then
+                     Line_Config.Add (To_String (Headings (I)),
+                                      To_String (Current (I)));
+                  else
+                     Line_Config.Add
+                       (Ada.Strings.Fixed.Trim
+                          (Integer'Image (I),
+                           Ada.Strings.Left),
+                        To_String (Current (I)));
+                  end if;
                end loop;
                Result.Add (Line_Config);
             end;
