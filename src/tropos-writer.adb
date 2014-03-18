@@ -145,4 +145,165 @@ package body Tropos.Writer is
 
    end Write_Config;
 
+   ----------------------
+   -- Write_XML_Config --
+   ----------------------
+
+   procedure Write_XML_Config
+     (Config : Configuration;
+      Path   : String)
+   is
+      procedure Write_XML_Tag
+        (Item   : Configuration;
+         Indent : Ada.Text_IO.Positive_Count);
+
+      procedure Write_XML_Attribute
+        (Item   : Configuration);
+
+      function Maybe_Quote (Text : String) return String;
+      function Escape_Special (Text : String) return String;
+
+      -------------------
+      -- Escape_Quotes --
+      -------------------
+
+      function Escape_Special (Text : String) return String is
+         use Ada.Characters.Latin_1;
+         Result   : String (1 .. Text'Length * 2);
+         Length   : Natural := 0;
+         Got_CRLF : Boolean := False;
+      begin
+         for I in Text'Range loop
+            if Text (I) = '"' then
+               Length := Length + 1;
+               Result (Length) := '\';
+               Length := Length + 1;
+               Result (Length) := '"';
+            elsif Text (I) = CR then
+               if I < Text'Last and then
+                 Text (I + 1) = LF
+               then
+                  Length := Length + 1;
+                  Result (Length) := '\';
+                  Length := Length + 1;
+                  Result (Length) := 'n';
+                  Got_CRLF := True;
+               else
+                  Length := Length + 1;
+                  Result (Length) := '\';
+                  Length := Length + 1;
+                  Result (Length) := 'r';
+               end if;
+            elsif Text (I) = LF then
+               if Got_CRLF then
+                  Got_CRLF := False;
+               else
+                  Length := Length + 1;
+                  Result (Length) := '\';
+                  Length := Length + 1;
+                  Result (Length) := 'n';
+               end if;
+            elsif Text (I) = HT then
+               Length := Length + 1;
+               Result (Length) := ' ';
+            else
+               Length := Length + 1;
+               Result (Length) := Text (I);
+            end if;
+         end loop;
+         return Result (1 .. Length);
+      end Escape_Special;
+
+      -----------------
+      -- Maybe_Quote --
+      -----------------
+
+      function Maybe_Quote (Text : String) return String is
+         use Ada.Characters.Handling;
+      begin
+         if Text'Length = 0 then
+            return '"' & '"';
+         end if;
+         for I in Text'Range loop
+            if not Is_Letter (Text (I)) and then
+              not Is_Digit (Text (I)) and then
+              Text (I) /= '_' and then
+              Text (I) /= '.'
+            then
+               return '"' & Escape_Special (Text) & '"';
+            end if;
+         end loop;
+         return Text;
+      end Maybe_Quote;
+
+      -------------------------
+      -- Write_XML_Attribute --
+      -------------------------
+
+      procedure Write_XML_Attribute
+        (Item   : Configuration)
+      is
+         use Ada.Text_IO;
+      begin
+         if Child_Count (Item) = 0 then
+            Put (" " & Item.Config_Name & "=""true""");
+         elsif Child_Count (Item) = 1 and then
+           Item.Children.Element (1).Child_Count = 0
+         then
+            Put (" " & Item.Config_Name & "=""");
+            Put (Maybe_Quote (Item.Children.Element (1).Config_Name));
+            Put ("""");
+         end if;
+      end Write_XML_Attribute;
+
+      -------------------
+      -- Write_XML_Tag --
+      -------------------
+
+      procedure Write_XML_Tag
+        (Item   : Configuration;
+         Indent : Ada.Text_IO.Positive_Count)
+      is
+         use Ada.Text_IO;
+      begin
+         Set_Col (Indent);
+         Put ("<" & Item.Config_Name);
+
+         for Child of Item loop
+            Write_XML_Attribute (Child);
+         end loop;
+
+         Put_Line (">");
+         for Child of Item loop
+            if Child.Child_Count > 1
+              or else (Child.Child_Count = 1
+                       and then Child.Children.Element (1).Child_Count > 0)
+            then
+               Write_XML_Tag (Child, Indent + 2);
+            end if;
+         end loop;
+         Set_Col (Indent);
+         Put_Line ("</" & Item.Config_Name & ">");
+
+      end Write_XML_Tag;
+
+      File : Ada.Text_IO.File_Type;
+   begin
+      if Path /= "" then
+         Ada.Text_IO.Create (File, Ada.Text_IO.Out_File, Path);
+         Ada.Text_IO.Set_Output (File);
+      end if;
+
+      Ada.Text_IO.Put_Line
+        ("<?xml version=""1.0"" encoding=""UTF-8""?>");
+
+      Write_XML_Tag (Config, 1);
+
+      if Path /= "" then
+         Ada.Text_IO.Set_Output (Ada.Text_IO.Standard_Output);
+         Ada.Text_IO.Close (File);
+      end if;
+
+   end Write_XML_Config;
+
 end Tropos.Writer;
