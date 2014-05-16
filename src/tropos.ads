@@ -23,6 +23,12 @@ package Tropos is
                   Name      : in     String;
                   Value     : in     String);
 
+   procedure Set_Path
+     (Config         : in out Configuration;
+      Path           : String;
+      Value          : String;
+      Path_Separator : Character := '.');
+
    function Get (From_Config : Configuration;
                  Field_Name  : String)
                  return String;

@@ -1,3 +1,5 @@
+with Ada.Strings.Fixed;
+
 package body Tropos is
 
    type Iterator is
@@ -597,6 +599,54 @@ package body Tropos is
    begin
       return (Element => Item);
    end Reference;
+
+   --------------
+   -- Set_Path --
+   --------------
+
+   procedure Set_Path
+     (Config         : in out Configuration;
+      Path           : String;
+      Value          : String;
+      Path_Separator : Character := '.')
+   is
+      use Ada.Strings, Ada.Strings.Fixed;
+      Sep_Index : constant Natural :=
+                    Index (Path, (1 => Path_Separator));
+   begin
+      if Sep_Index = 0 then
+         Config.Add (Path, Value);
+      else
+         declare
+            Field : constant String := Path (Path'First .. Sep_Index - 1);
+         begin
+            if Config.Contains (Field) then
+               declare
+                  use Ada.Strings.Unbounded;
+               begin
+                  for Child of Config.Children loop
+                     if Child.Name = Field then
+                        Child.Set_Path
+                          (Path (Sep_Index + 1 .. Path'Last),
+                           Value, Path_Separator);
+                        exit;
+                     end if;
+                  end loop;
+               end;
+            else
+               declare
+                  Child_Config : Configuration :=
+                                   New_Config (Field);
+               begin
+                  Child_Config.Set_Path
+                    (Path (Sep_Index + 1 .. Path'Last),
+                     Value, Path_Separator);
+                  Config.Add (Child_Config);
+               end;
+            end if;
+         end;
+      end if;
+   end Set_Path;
 
    -----------
    -- Value --
