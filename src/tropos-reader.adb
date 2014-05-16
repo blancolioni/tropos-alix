@@ -382,20 +382,28 @@ package body Tropos.Reader is
    begin
 
       for I in 1 .. Result.Children.Last_Index loop
-         declare
-            Old_Child : constant Configuration_Access :=
-                          Result.Children.Element (I);
-            Old_Child_Tag : constant String := Old_Child.Config_Name;
-            Relative_Path   : constant String :=
-                              Result.Children.Element (I).Value;
-            Full_Path     : constant String :=
-                              Ada.Directories.Containing_Directory (Path) &
-            "/" & Relative_Path;
-         begin
-            Old_Child.all :=
-              Read_Config (Full_Path);
-            Old_Child.Add ("tag", Old_Child_Tag);
-         end;
+         if Result.Children.Element (I).Value = "yes"
+           or else Result.Children.Element (I).Value = "no"
+         then
+            --  leave this one alone
+            null;
+         else
+            declare
+               Old_Child       : constant Configuration_Access :=
+                                   Result.Children.Element (I);
+               Old_Child_Tag   : constant String := Old_Child.Config_Name;
+               Relative_Path   : constant String :=
+                                   Result.Children.Element (I).Value;
+               Full_Path       : constant String :=
+                                   Ada.Directories.Containing_Directory
+                                     (Path) &
+                                   "/" & Relative_Path;
+            begin
+               Old_Child.all :=
+                 Read_Config (Full_Path);
+               Old_Child.Add ("tag", Old_Child_Tag);
+            end;
+         end if;
       end loop;
       return Result;
    end Read_Indirect_Config;
