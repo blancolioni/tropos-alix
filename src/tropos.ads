@@ -15,6 +15,7 @@ package Tropos is
    Empty_Config : constant Configuration;
 
    function New_Config (Name : String) return Configuration;
+   function New_Config (Index : Integer) return Configuration;
 
    procedure Add (To_Config : in out Configuration;
                   Child     : in     Configuration);
@@ -85,6 +86,10 @@ package Tropos is
    function Get (From_Config : Configuration;
                  Field_Index : Positive)
                  return Float;
+
+   function Get (From_Config : Configuration;
+                 Field_Index : Positive)
+                 return Long_Float;
 
    function Value (Of_Config : Configuration)
                    return String;
