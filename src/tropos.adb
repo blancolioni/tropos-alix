@@ -50,6 +50,36 @@ package body Tropos is
       To_Config.Add (Child_Name);
    end Add;
 
+   ---------
+   -- Add --
+   ---------
+
+   procedure Add (To_Config : in out Configuration;
+                  Name      : in     String;
+                  Value     : in     Integer)
+   is
+   begin
+      To_Config.Add (Name,
+                     Ada.Strings.Fixed.Trim
+                       (Integer'Image (Value),
+                        Ada.Strings.Left));
+   end Add;
+
+   ---------
+   -- Add --
+   ---------
+
+   procedure Add (To_Config : in out Configuration;
+                  Name      : in     String;
+                  Value     : in     Float)
+   is
+   begin
+      To_Config.Add (Name,
+                     Ada.Strings.Fixed.Trim
+                       (Float'Image (Value),
+                        Ada.Strings.Left));
+   end Add;
+
    -----------
    -- Child --
    -----------
@@ -381,7 +411,9 @@ package body Tropos is
                  Field_Name  : String)
                  return Float
    is
-      Result : constant String := From_Config.Get (Field_Name, "0.0");
+      Result : constant String :=
+                 Ada.Strings.Fixed.Trim (From_Config.Get (Field_Name, "0.0"),
+                                         Ada.Strings.Both);
    begin
       for I in Result'Range loop
          if Result (I) not in '0' .. '9' and then Result (I) /= '.'
