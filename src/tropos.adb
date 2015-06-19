@@ -76,6 +76,10 @@ package body Tropos is
       To_Config.Add (Name, Trim (Float'Image (Value), Left));
    end Add;
 
+                       (Float'Image (Value),
+                        Ada.Strings.Left));
+   end Add;
+
    -----------
    -- Child --
    -----------
