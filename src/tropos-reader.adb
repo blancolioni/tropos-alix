@@ -87,7 +87,7 @@ package body Tropos.Reader is
          end;
       end loop;
       Tropos.Reader.Parser.Close;
-     return Result;
+      return Result;
    exception
       when Tropos.Reader.Parser.Parse_Error =>
          return Empty_Config;
