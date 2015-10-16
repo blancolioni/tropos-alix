@@ -323,7 +323,7 @@ package body Tropos is
    is
       Result : constant String := From_Config.Get (Field_Name, "no");
    begin
-      return Result = "yes";
+      return Result = "yes" or else Result = "true";
    end Get;
 
    ---------
