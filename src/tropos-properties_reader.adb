@@ -23,7 +23,10 @@ package body Tropos.Properties_Reader is
             Line      : constant String := Trim (Full_Line, Ada.Strings.Both);
             Equal     : constant Natural := Index (Line, "=");
          begin
-            if Line'Length = 0 or else Line (Line'First) = '#' then
+            if Line'Length = 0
+              or else Line (Line'First) = '#'
+              or else Line (Line'First) = Character'Val (13)
+            then
                null;
             elsif Equal > 0 then
                Result.Set_Path (Line (Line'First .. Equal - 1),
