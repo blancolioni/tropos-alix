@@ -252,10 +252,12 @@ package body Tropos.Reader is
    -- Read_CSV_Config --
    ---------------------
 
-   function Read_CSV_Config (Path        : String;
-                             Header_Line : Boolean := True;
-                             Separator   : Character := ',')
-                             return Configuration
+   function Read_CSV_Config
+     (Path          : String;
+      Header_Line   : Boolean := True;
+      Separator     : Character := ',';
+      Extend_Header : Boolean := True)
+      return Configuration
    is
       use Ada.Strings.Unbounded;
 
@@ -313,15 +315,16 @@ package body Tropos.Reader is
             Start := Line'Last + 1;
          end if;
 
-         while Count < 10 loop
-            Count := Count + 1;
-            Result (Count) :=
-              To_Unbounded_String
-                (Ada.Strings.Fixed.Trim
-                     (Natural'Image (Count),
-                      Ada.Strings.Left));
-            Count := Count + 1;
-         end loop;
+         if Extend_Header then
+            while Count < 10 and then Count < Result'Last loop
+               Count := Count + 1;
+               Result (Count) :=
+                 To_Unbounded_String
+                   (Ada.Strings.Fixed.Trim
+                      (Natural'Image (Count),
+                       Ada.Strings.Left));
+            end loop;
+         end if;
 
          return Result (1 .. Count);
       end Next_Line;
