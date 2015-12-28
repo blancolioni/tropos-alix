@@ -295,7 +295,11 @@ package body Tropos is
    is
    begin
       if From_Config.Contains (Field_Name) then
-         return From_Config.Get (Field_Name);
+         if From_Config.Child (Field_Name).Child_Count = 0 then
+            return "yes";
+         else
+            return From_Config.Get (Field_Name);
+         end if;
       else
          return Default_Value;
       end if;
