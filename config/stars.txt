@@ -1,0 +1,194 @@
+sol = {
+  name = "Sol"
+  loc = { 0 0 0 }
+  spectral_class = G2
+  mass = 1
+
+  planet = {
+     name = "Mercury"
+     orbit = {
+       axis = 0.387098
+       start = 260
+     }
+     physical = {
+       radius = 0.3829
+       mass = 0.055
+       day = 58.646
+       tilt = 0.027
+     }
+     terrain = {
+       land = 100
+     }
+     atmosphere = {
+       pressure = 0
+     }
+     temperature = {
+       equator = { 100 340 700 }
+       arctic = { 80 200 380 }
+     }
+  }
+
+  planet = {
+     name = "Venus"
+     orbit = {
+       axis = 0.723332
+       start = 0
+     }
+     physical = {
+       radius = 0.9499
+       mass = 0.815
+       day = 30
+       tilt = 177.3
+     }
+     terrain = {
+       land = 0.1
+     }
+     atmosphere = {
+       pressure = 1.5
+       composition = {
+         n2 = 80
+         o2 = 19
+         co2 = 1
+       }
+     }
+
+     temperature = {
+         305
+     }
+  }
+
+  planet = {
+     name = "Earth"
+     orbit = {
+       axis = 1.0
+       start = 95
+     }
+     physical = {
+       radius = 1
+       mass = 1
+       day = 1
+       tilt = 24
+     }
+     terrain = {
+       land = 40
+       h2o = 60
+     }
+     atmosphere = {
+       pressure = 1
+       composition = {
+         n2 = 80
+         o2 = 19
+         co2 = 1
+       }
+     }
+     temperature = {
+       184 287 331
+     }
+
+     moon = {
+       name = "Luna"
+       orbit = {
+         axis = 0.00257
+         start = 0
+       }
+       physical = {
+         radius = 0.273
+         mass = 0.0123
+       }
+       terrain = {
+         land = 100
+       }
+       atmosphere = {
+         pressure = 0
+       }
+       temperature = {
+         equator = { 100 220 390 }
+         arctic = { 70 130 230 }
+       }
+     }
+  }
+
+  planet = {
+     name = "Mars"
+     orbit = {
+       axis = 1.523679
+       start = 15
+     }
+     physical = {
+       radius = 0.532
+       mass = 0.107
+       day = 1.025957
+       tilt = 25.19
+     }
+     terrain = {
+       land = 67
+       h2o = 33
+     }
+     atmosphere = {
+       pressure = 1
+       composition = {
+         n2 = 75
+         o2 = 15
+         co2 = 10
+       }
+     }
+     temperature = {
+       184 287 331
+     }
+  }
+}
+
+
+proxima_centauri = {
+  name = "Proxima Centauri"
+  right_ascension = { 14 29 43 }
+  declination = { -62 40 46 }
+  distance = 4.2421
+  spectral_class = M5
+  mass = 0.123
+}
+
+alpha_centauri_a = {
+  name = "α Centauri A"
+  right_ascension = { 14 39 36.5 }
+  declination = { -60 50 2 }
+  distance = 4.365
+  spectral_class = G2
+  mass = 1.1
+}
+
+alpha_centauri_b = {
+  name = "α Centauri B"
+  right_ascension = { 14 39 35.1 }
+  declination = { -60 50 14 }
+  distance = 4.365
+  spectral_class = K1
+  mass = 0.9
+}
+
+barnards_star = {
+  name = "Barnard's Star"
+  right_ascension = { 17 57 48.5 }
+  declination = { 4 41 36 }
+  distance = 5.963
+  spectral_class = M4
+  mass = 0.16
+}
+
+wolf359 = {
+  name = "Wolf 359"
+  right_ascension = { 10 56 29.2 }
+  declination = { 7 0 53 }
+  distance = 7.7825
+  spectral_class = M6
+  mass = 0.09
+}
+
+lalande21185 = {
+  name = "Lalande 21185"
+  right_ascension = { 11 3 20.194 }
+  declination = { 35 58 11.55 }
+  distance = 8.32
+  spectral_class = M2
+  mass = 0.46
+}
