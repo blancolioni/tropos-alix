@@ -7,3 +7,9 @@ compiler_option = "-gnatwa"
 compiler_option = "-gnatyabcefhiklmnoprst"
 compiler_option = "-gnat2012"
 linker_option = "-g"
+depend = { project = aqua version = any }
+main_unit = tropos-test_driver
+exec_name = tropos
+config_dir = config
+path_unit = { unit = Tropos.Paths
+              path = src/tropos-paths.ads }

@@ -3,3 +3,11 @@ syntax: glob
 *.ali
 *~
 b~*.ad[bs]
+build/bin/*
+build/obj/*
+*.orig
+src/tropos-paths.ads
+tropos.gpr
+.aquarius-session
+config/stars.scm
+config/stars.xml
