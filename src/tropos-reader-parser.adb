@@ -88,6 +88,10 @@ package body Tropos.Reader.Parser is
                   return;
                elsif Ch = '#' then
                   Curr_Col_Index := Curr_Line_Length + 1;
+               elsif Ch = '/' and then Curr_Col_Index <= Curr_Line_Length
+                 and then Curr_Line (Curr_Col_Index) = '/'
+               then
+                  Curr_Col_Index := Curr_Line_Length + 1;
                elsif Ch = '"' then
                   Curr_Text_Length := 0;
                   Ch := Curr_Line (Curr_Col_Index);
