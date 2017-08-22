@@ -20,6 +20,10 @@ package body Tropos is
      (Object   : Iterator;
       Position : Cursor) return Cursor;
 
+   function To_Float_Value
+     (Text : String)
+      return Float;
+
    ---------
    -- Add --
    ---------
@@ -420,7 +424,16 @@ package body Tropos is
            and then Result (I) /= 'e' and then Result (I) /= 'E'
            and then Result (I) /= '+' and then Result (I) /= '-'
          then
-            return Float'Value (Result (Result'First .. I - 1));
+            declare
+               X : constant Float :=
+                     Float'Value (Result (Result'First .. I - 1));
+            begin
+               if Result (I) = '%' then
+                  return X / 100.0;
+               else
+                  return X;
+               end if;
+            end;
          end if;
       end loop;
       return Float'Value (Result);
@@ -435,23 +448,44 @@ package body Tropos is
                  Default_Value : Float)
                  return Float
    is
-      Result : constant String :=
-                 From_Config.Get (Field_Name,
-                                  Float'Image (Default_Value));
    begin
-      return Float'Value (Result);
+      if From_Config.Contains (Field_Name) then
+         return Get (From_Config, Field_Name);
+      else
+         return Default_Value;
+      end if;
    end Get;
 
    ---------
    -- Get --
    ---------
 
-   function Get (From_Config : Configuration;
-                 Field_Name  : String)
-                 return Long_Float
+   function Get
+     (From_Config : Configuration;
+      Field_Name  : String)
+      return Long_Float
    is
-      Result : constant String := From_Config.Get (Field_Name, "0.0");
+      use Ada.Strings, Ada.Strings.Fixed;
+      Result : constant String :=
+                 Trim (From_Config.Get (Field_Name, "0.0"), Left);
    begin
+      for I in Result'Range loop
+         if Result (I) not in '0' .. '9' and then Result (I) /= '.'
+           and then Result (I) /= 'e' and then Result (I) /= 'E'
+           and then Result (I) /= '+' and then Result (I) /= '-'
+         then
+            declare
+               X : constant Long_Float :=
+                     Long_Float'Value (Result (Result'First .. I - 1));
+            begin
+               if Result (I) = '%' then
+                  return X / 100.0;
+               else
+                  return X;
+               end if;
+            end;
+         end if;
+      end loop;
       return Long_Float'Value (Result);
    end Get;
 
@@ -464,11 +498,12 @@ package body Tropos is
                  Default_Value : Long_Float)
                  return Long_Float
    is
-      Result : constant String :=
-                 From_Config.Get (Field_Name,
-                                  Long_Float'Image (Default_Value));
    begin
-      return Long_Float'Value (Result);
+      if From_Config.Contains (Field_Name) then
+         return Get (From_Config, Field_Name);
+      else
+         return Default_Value;
+      end if;
    end Get;
 
    ---------
@@ -479,9 +514,10 @@ package body Tropos is
                  Field_Index : Positive)
                  return Float
    is
-      Result : constant String := From_Config.Get (Field_Index);
+      Field_Name : constant String :=
+                     From_Config.Child (Field_Index).Config_Name;
    begin
-      return Float'Value (Result);
+      return From_Config.Get (Field_Name);
    end Get;
 
    ---------
@@ -492,9 +528,10 @@ package body Tropos is
                  Field_Index : Positive)
                  return Long_Float
    is
-      Result : constant String := From_Config.Get (Field_Index);
+      Field_Name : constant String :=
+                     From_Config.Child (Field_Index).Config_Name;
    begin
-      return Long_Float'Value (Result);
+      return From_Config.Get (Field_Name);
    end Get;
 
    --------------
@@ -709,6 +746,38 @@ package body Tropos is
       end if;
    end Set_Path;
 
+   --------------------
+   -- To_Float_Value --
+   --------------------
+
+   function To_Float_Value
+     (Text : String)
+      return Float
+   is
+      use Ada.Strings, Ada.Strings.Fixed;
+      Result : constant String :=
+                 Trim (Text, Both);
+   begin
+      for I in Result'Range loop
+         if Result (I) not in '0' .. '9' and then Result (I) /= '.'
+           and then Result (I) /= 'e' and then Result (I) /= 'E'
+           and then Result (I) /= '+' and then Result (I) /= '-'
+         then
+            declare
+               X : constant Float :=
+                     Float'Value (Result (Result'First .. I - 1));
+            begin
+               if Result (I) = '%' then
+                  return X / 100.0;
+               else
+                  return X;
+               end if;
+            end;
+         end if;
+      end loop;
+      return Float'Value (Result);
+   end To_Float_Value;
+
    -----------
    -- Value --
    -----------
@@ -741,7 +810,7 @@ package body Tropos is
    is
       Result : constant String := Value (Of_Config);
    begin
-      return Float'Value (Result);
+      return To_Float_Value (Result);
    end Value;
 
 end Tropos;
