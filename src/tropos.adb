@@ -514,10 +514,9 @@ package body Tropos is
                  Field_Index : Positive)
                  return Float
    is
-      Field_Name : constant String :=
-                     From_Config.Child (Field_Index).Config_Name;
+      Field_Name : constant String := From_Config.Get (Field_Index);
    begin
-      return From_Config.Get (Field_Name);
+      return Float'Value (Field_Name);
    end Get;
 
    ---------
@@ -528,10 +527,9 @@ package body Tropos is
                  Field_Index : Positive)
                  return Long_Float
    is
-      Field_Name : constant String :=
-                     From_Config.Child (Field_Index).Config_Name;
+      Field_Name : constant String := From_Config.Get (Field_Index);
    begin
-      return From_Config.Get (Field_Name);
+      return Long_Float'Value (Field_Name);
    end Get;
 
    --------------
