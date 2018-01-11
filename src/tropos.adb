@@ -1,4 +1,5 @@
 with Ada.Strings.Fixed;
+with Ada.Strings.Unbounded.Equal_Case_Insensitive;
 
 package body Tropos is
 
@@ -23,6 +24,13 @@ package body Tropos is
    function To_Float_Value
      (Text : String)
       return Float;
+
+   function "+" (S : String) return Ada.Strings.Unbounded.Unbounded_String
+                 renames Ada.Strings.Unbounded.To_Unbounded_String;
+
+   function Equal (X, Y : Ada.Strings.Unbounded.Unbounded_String)
+                   return Boolean
+                   renames Ada.Strings.Unbounded.Equal_Case_Insensitive;
 
    ---------
    -- Add --
@@ -95,7 +103,7 @@ package body Tropos is
             Child_Config : constant Configuration_Access :=
                              Of_Config.Children.Element (I);
          begin
-            if Child_Config.Name = Child_Name then
+            if Equal (Child_Config.Name, +Child_Name) then
                return Of_Config.Children.Element (I).all;
             end if;
          end;
@@ -139,7 +147,7 @@ package body Tropos is
       Count  : Natural := 0;
    begin
       for I in Result'Range loop
-         if Config.Children.Element (I).Config_Name = Name then
+         if Equal (Config.Children.Element (I).Name, +Name) then
             Count := Count + 1;
             Result (Count) := Config.Children.Element (I).all;
          end if;
@@ -234,7 +242,7 @@ package body Tropos is
       use type Ada.Strings.Unbounded.Unbounded_String;
    begin
       for I in 1 .. Config.Children.Last_Index loop
-         if Config.Children.Element (I).Name = Name then
+         if Equal (Config.Children.Element (I).Name, +Name) then
             return True;
          end if;
       end loop;
