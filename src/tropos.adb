@@ -108,10 +108,7 @@ package body Tropos is
             end if;
          end;
       end loop;
-      raise Constraint_Error with
-        "configuration " &
-        Ada.Strings.Unbounded.To_String (Of_Config.Name) &
-        " has no child named " & Child_Name;
+      return New_Config (Child_Name);
    end Child;
 
    -----------
@@ -703,6 +700,33 @@ package body Tropos is
    begin
       return (Element => Item);
    end Reference;
+
+   --------------------
+   -- Required_Child --
+   --------------------
+
+   function Required_Child
+     (Of_Config  : Configuration;
+      Child_Name : String)
+      return Configuration
+   is
+      use type Ada.Strings.Unbounded.Unbounded_String;
+   begin
+      for I in 1 .. Of_Config.Children.Last_Index loop
+         declare
+            Child_Config : constant Configuration_Access :=
+                             Of_Config.Children.Element (I);
+         begin
+            if Equal (Child_Config.Name, +Child_Name) then
+               return Of_Config.Children.Element (I).all;
+            end if;
+         end;
+      end loop;
+      raise Constraint_Error with
+        "configuration " &
+        Ada.Strings.Unbounded.To_String (Of_Config.Name) &
+        " has no child named " & Child_Name;
+   end Required_Child;
 
    --------------
    -- Set_Path --
