@@ -184,6 +184,15 @@ package Tropos is
    function Child (Of_Config  : Configuration;
                    Child_Name : String)
                    return Configuration;
+   --  Return the configuration associated with the first child of the given
+   --  config, or an empty configuration is such a child does not exist
+
+   function Required_Child
+     (Of_Config  : Configuration;
+      Child_Name : String)
+      return Configuration;
+   --  As child, but raise an exception instead of returning an empty
+   --  configuration if no child with that name exists
 
    function Child (Of_Config  : Configuration;
                    Index      : Positive)
