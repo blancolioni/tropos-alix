@@ -219,6 +219,9 @@ package body Tropos.Reader is
       procedure Call_Reader
         (Directory_Entry : Ada.Directories.Directory_Entry_Type);
 
+      procedure Recurse
+        (Directory_Entry : Ada.Directories.Directory_Entry_Type);
+
       -----------------
       -- Call_Reader --
       -----------------
@@ -238,6 +241,36 @@ package body Tropos.Reader is
             raise;
       end Call_Reader;
 
+      -------------
+      -- Recurse --
+      -------------
+
+      procedure Recurse
+        (Directory_Entry : Ada.Directories.Directory_Entry_Type)
+      is
+         use Ada.Directories;
+         Name             : constant String := Simple_Name (Directory_Entry);
+      begin
+         if Name = "." or else Name = ".." then
+            return;
+         end if;
+
+         Ada.Directories.Search
+           (Directory      => Full_Name (Directory_Entry),
+            Pattern        => "*." & Extension,
+            Filter         => (Ada.Directories.Ordinary_File => True,
+                               others                        => False),
+            Process        => Call_Reader'Access);
+
+         Ada.Directories.Search
+           (Directory      => Full_Name (Directory_Entry),
+            Pattern        => "*",
+            Filter         => (Ada.Directories.Directory     => True,
+                               others                        => False),
+            Process        => Recurse'Access);
+
+      end Recurse;
+
    begin
       Ada.Directories.Search
         (Directory      => Path,
@@ -246,6 +279,13 @@ package body Tropos.Reader is
                             Ada.Directories.Directory     => True,
                             others => False),
          Process        => Call_Reader'Access);
+
+      Ada.Directories.Search
+        (Directory      => Path,
+         Pattern        => "*",
+         Filter         => (Ada.Directories.Directory     => True,
+                            others                        => False),
+         Process        => Recurse'Access);
    end Read_Config;
 
    ---------------------
