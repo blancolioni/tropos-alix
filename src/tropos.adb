@@ -1,7 +1,11 @@
+with Ada.Numerics.Float_Random;
+
 with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded.Equal_Case_Insensitive;
 
 package body Tropos is
+
+   Gen : Ada.Numerics.Float_Random.Generator;
 
    type Iterator is
      new Configuration_Iterator_Interfaces.Reversible_Iterator
@@ -421,27 +425,52 @@ package body Tropos is
                  return Float
    is
       use Ada.Strings, Ada.Strings.Fixed;
-      Result : constant String :=
-                 Trim (From_Config.Get (Field_Name, "0.0"), Left);
+      Result      : constant String :=
+                      Trim (From_Config.Get (Field_Name, "0.0"), Left);
+      Start       : Positive := Result'First;
+      Approximate : Boolean := False;
    begin
       for I in Result'Range loop
-         if Result (I) not in '0' .. '9' and then Result (I) /= '.'
+         if I = Result'First and then Result (I) = '~' then
+            Approximate := True;
+            Start := Start + 1;
+         elsif Result (I) not in '0' .. '9' and then Result (I) /= '.'
            and then Result (I) /= 'e' and then Result (I) /= 'E'
            and then Result (I) /= '+' and then Result (I) /= '-'
          then
             declare
-               X : constant Float :=
-                     Float'Value (Result (Result'First .. I - 1));
+               X : Float :=
+                     Float'Value (Result (Start .. I - 1));
             begin
+               if Approximate then
+                  X := X * 0.9
+                    + Ada.Numerics.Float_Random.Random (Gen) * 0.2 * X;
+               end if;
+
                if Result (I) = '%' then
                   return X / 100.0;
+               elsif Result (I) in 'K' | 'k' then
+                  return X * 1_000.0;
+               elsif Result (I) in 'M' | 'm' then
+                  return X * 1_000_000.0;
+               elsif Result (I) in 'G' | 'g' then
+                  return X * 1_000_000_000.0;
                else
                   return X;
                end if;
             end;
          end if;
       end loop;
-      return Float'Value (Result);
+
+      declare
+         X : Float := Float'Value (Result (Start .. Result'Last));
+      begin
+         if Approximate then
+            X := X * 0.9
+              + Ada.Numerics.Float_Random.Random (Gen) * 0.2 * X;
+         end if;
+         return X;
+      end;
    end Get;
 
    ---------
@@ -473,25 +502,49 @@ package body Tropos is
       use Ada.Strings, Ada.Strings.Fixed;
       Result : constant String :=
                  Trim (From_Config.Get (Field_Name, "0.0"), Left);
+      Start       : Positive := Result'First;
+      Approximate : Boolean := False;
    begin
       for I in Result'Range loop
-         if Result (I) not in '0' .. '9' and then Result (I) /= '.'
+         if I = Result'First and then Result (I) = '~' then
+            Approximate := True;
+            Start := Start + 1;
+         elsif Result (I) not in '0' .. '9' and then Result (I) /= '.'
            and then Result (I) /= 'e' and then Result (I) /= 'E'
            and then Result (I) /= '+' and then Result (I) /= '-'
          then
             declare
-               X : constant Long_Float :=
-                     Long_Float'Value (Result (Result'First .. I - 1));
+               X : Long_Float :=
+                     Long_Float'Value (Result (Start .. I - 1));
             begin
+               if Approximate then
+                  X := X * 0.9 +
+                    Long_Float (Ada.Numerics.Float_Random.Random (Gen))
+                      * 0.2 * X;
+               end if;
                if Result (I) = '%' then
                   return X / 100.0;
+               elsif Result (I) in 'K' | 'k' then
+                  return X * 1_000.0;
+               elsif Result (I) in 'M' | 'm' then
+                  return X * 1_000_000.0;
+               elsif Result (I) in 'G' | 'g' then
+                  return X * 1_000_000_000.0;
                else
                   return X;
                end if;
             end;
          end if;
       end loop;
-      return Long_Float'Value (Result);
+      declare
+         X : Long_Float := Long_Float'Value (Result (Start .. Result'Last));
+      begin
+         if Approximate then
+            X := X * 0.9 +
+              Long_Float (Ada.Numerics.Float_Random.Random (Gen)) * 0.2 * X;
+         end if;
+         return X;
+      end;
    end Get;
 
    ---------
