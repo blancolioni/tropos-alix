@@ -840,25 +840,50 @@ package body Tropos is
       use Ada.Strings, Ada.Strings.Fixed;
       Result : constant String :=
                  Trim (Text, Both);
+      Start       : Positive := Result'First;
+      Approximate : Boolean := False;
    begin
       for I in Result'Range loop
-         if Result (I) not in '0' .. '9' and then Result (I) /= '.'
+         if I = Result'First and then Result (I) = '~' then
+            Approximate := True;
+            Start := Start + 1;
+         elsif Result (I) not in '0' .. '9' and then Result (I) /= '.'
            and then Result (I) /= 'e' and then Result (I) /= 'E'
            and then Result (I) /= '+' and then Result (I) /= '-'
          then
             declare
-               X : constant Float :=
-                     Float'Value (Result (Result'First .. I - 1));
+               X : Float :=
+                     Float'Value (Result (Start .. I - 1));
             begin
+               if Approximate then
+                  X := X * 0.9
+                    + Ada.Numerics.Float_Random.Random (Gen) * 0.2 * X;
+               end if;
+
                if Result (I) = '%' then
                   return X / 100.0;
+               elsif Result (I) in 'K' | 'k' then
+                  return X * 1_000.0;
+               elsif Result (I) in 'M' | 'm' then
+                  return X * 1_000_000.0;
+               elsif Result (I) in 'G' | 'g' then
+                  return X * 1_000_000_000.0;
                else
                   return X;
                end if;
             end;
          end if;
       end loop;
-      return Float'Value (Result);
+
+      declare
+         X : Float := Float'Value (Result (Start .. Result'Last));
+      begin
+         if Approximate then
+            X := X * 0.9
+              + Ada.Numerics.Float_Random.Random (Gen) * 0.2 * X;
+         end if;
+         return X;
+      end;
    end To_Float_Value;
 
    -----------
