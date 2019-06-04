@@ -81,10 +81,9 @@ package body Tropos.Writer is
             return '"' & '"';
          end if;
          for I in Text'Range loop
-            if not Is_Letter (Text (I)) and then
-              not Is_Digit (Text (I)) and then
-              Text (I) /= '_' and then
-              Text (I) /= '.'
+            if not Is_Letter (Text (I))
+              and then not Is_Digit (Text (I))
+              and then Text (I) not in '_' | '.' | '-' | '+'
             then
                return '"' & Escape_Special (Text) & '"';
             end if;
@@ -104,7 +103,6 @@ package body Tropos.Writer is
          Set_Col (Indent);
          Put (Item.Config_Name);
          if Child_Count (Item) = 0 then
-            --  Put_Line (" = {}");
             New_Line;
          elsif Child_Count (Item) = 1 and then
            Item.Children.Element (1).Child_Count = 0
