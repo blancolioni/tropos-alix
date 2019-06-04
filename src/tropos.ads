@@ -108,6 +108,10 @@ package Tropos is
    function Value (Of_Config : Configuration)
                    return Float;
 
+   function Value (Of_Config     : Configuration;
+                   Default_Value : Long_Float := 0.0)
+                   return Long_Float;
+
    generic
       type Field_Type is private;
       with function From_String (Text : String) return Field_Type;

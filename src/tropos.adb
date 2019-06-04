@@ -414,6 +414,11 @@ package body Tropos is
          end if;
       end loop;
       return Integer'Value (Result);
+   exception
+      when Constraint_Error =>
+         raise Constraint_Error with
+           "cannot convert field" & Field_Index'Image & " to an integer: "
+           & Result;
    end Get;
 
    ---------
@@ -919,6 +924,22 @@ package body Tropos is
       Result : constant String := Value (Of_Config);
    begin
       return To_Float_Value (Result);
+   end Value;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value (Of_Config     : Configuration;
+                   Default_Value : Long_Float := 0.0)
+                   return Long_Float
+   is
+   begin
+      if Of_Config.Children.Is_Empty then
+         return Default_Value;
+      else
+         return Long_Float (To_Float_Value (Of_Config.Value));
+      end if;
    end Value;
 
 end Tropos;
