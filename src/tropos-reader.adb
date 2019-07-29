@@ -3,6 +3,7 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
+with Tropos.Reader.Json;
 with Tropos.Reader.Parser;
 
 package body Tropos.Reader is
@@ -467,5 +468,33 @@ package body Tropos.Reader is
       end loop;
       return Result;
    end Read_Indirect_Config;
+
+   ----------------------
+   -- Read_Json_Config --
+   ----------------------
+
+   function Read_Json_Config (Path : String) return Configuration is
+      Result : Configuration :=
+                 New_Config (Ada.Directories.Base_Name
+                             (Ada.Directories.Simple_Name (Path)));
+      File   : Ada.Text_IO.File_Type;
+      Input  : constant Ada.Text_IO.File_Type := Ada.Text_IO.Current_Input;
+   begin
+      Ada.Text_IO.Open (File, Ada.Text_IO.In_File, Path);
+      Ada.Text_IO.Set_Input (File);
+
+      Tropos.Reader.Json.Parse_Json_Config (Result);
+
+      Ada.Text_IO.Set_Input (Input);
+      Ada.Text_IO.Close (File);
+      return Result;
+   exception
+      when Tropos.Reader.Parser.Parse_Error =>
+         return Empty_Config;
+      when others =>
+         Ada.Text_IO.Set_Input (Input);
+         Ada.Text_IO.Close (File);
+         raise;
+   end Read_Json_Config;
 
 end Tropos.Reader;

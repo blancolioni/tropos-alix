@@ -1,6 +1,8 @@
 package Tropos.Reader is
 
    function Read_Config (Path : String) return Configuration;
+   function Read_Json_Config (Path : String) return Configuration;
+
    function Read_Config (Path      : String;
                          Extension : String)
                          return Configuration;
