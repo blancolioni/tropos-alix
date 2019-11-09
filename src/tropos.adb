@@ -918,12 +918,16 @@ package body Tropos is
    -- Value --
    -----------
 
-   function Value (Of_Config : Configuration)
+   function Value (Of_Config     : Configuration;
+                   Default_Value : Float := 0.0)
                    return Float
    is
-      Result : constant String := Value (Of_Config);
    begin
-      return To_Float_Value (Result);
+      if Of_Config.Children.Is_Empty then
+         return Default_Value;
+      else
+         return To_Float_Value (Of_Config.Value);
+      end if;
    end Value;
 
    -----------
