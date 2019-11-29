@@ -92,6 +92,19 @@ package body Tropos is
       To_Config.Add (Name, Trim (Float'Image (Value), Left));
    end Add;
 
+   ---------
+   -- Add --
+   ---------
+
+   procedure Add (To_Config : in out Configuration;
+                  Name      : in     String;
+                  Value     : in     Long_Float)
+   is
+      use Ada.Strings, Ada.Strings.Fixed;
+   begin
+      To_Config.Add (Name, Trim (Long_Float'Image (Value), Left));
+   end Add;
+
    -----------
    -- Child --
    -----------

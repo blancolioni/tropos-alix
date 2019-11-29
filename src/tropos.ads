@@ -32,6 +32,10 @@ package Tropos is
                   Name      : in     String;
                   Value     : in     Float);
 
+   procedure Add (To_Config : in out Configuration;
+                  Name      : in     String;
+                  Value     : in     Long_Float);
+
    procedure Set_Path
      (Config         : in out Configuration;
       Path           : String;
