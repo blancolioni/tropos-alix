@@ -101,7 +101,7 @@ package body Tropos.Writer is
          use Ada.Text_IO;
       begin
          Set_Col (Indent);
-         Put (Item.Config_Name);
+         Put (Maybe_Quote (Item.Config_Name));
          if Child_Count (Item) = 0 then
             New_Line;
          elsif Child_Count (Item) = 1 and then
