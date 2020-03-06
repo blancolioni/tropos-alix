@@ -684,6 +684,23 @@ package body Tropos is
       return Result;
    end Iterate;
 
+   ------------------------
+   -- Iterate_Attributes --
+   ------------------------
+
+   procedure Iterate_Attributes
+     (Config  : Configuration;
+      Process : not null access
+        procedure (Name : String;
+                   Value : String))
+   is
+   begin
+      for Position in Config.Attributes.Iterate loop
+         Process (Attribute_Maps.Key (Position),
+                  Attribute_Maps.Element (Position));
+      end loop;
+   end Iterate_Attributes;
+
    ----------
    -- Last --
    ----------
@@ -703,8 +720,9 @@ package body Tropos is
 
    function New_Config (Name : String) return Configuration is
    begin
-      return (Ada.Strings.Unbounded.To_Unbounded_String (Name),
-              Configuration_Vector.Empty_Vector);
+      return Configuration'
+        (Name   => Ada.Strings.Unbounded.To_Unbounded_String (Name),
+         others => <>);
    end New_Config;
 
    ----------------
@@ -712,13 +730,9 @@ package body Tropos is
    ----------------
 
    function New_Config (Index : Integer) return Configuration is
-      use Ada.Strings.Unbounded;
    begin
-      return (Trim
-              (To_Unbounded_String
-                 (Integer'Image (Index)),
-                 Ada.Strings.Left),
-              Configuration_Vector.Empty_Vector);
+      return New_Config
+        (Ada.Strings.Fixed.Trim (Index'Image, Ada.Strings.Left));
    end New_Config;
 
    ----------
@@ -798,6 +812,27 @@ package body Tropos is
         Ada.Strings.Unbounded.To_String (Of_Config.Name) &
         " has no child named " & Child_Name;
    end Required_Child;
+
+   -------------------
+   -- Set_Attribute --
+   -------------------
+
+   procedure Set_Attribute
+     (Config : in out Configuration;
+      Name   : String;
+      Value  : String)
+   is
+   begin
+      if Config.Attributes.Contains (Name) then
+         if Value = "" then
+            Config.Attributes.Delete (Name);
+         else
+            Config.Attributes.Replace (Name, Value);
+         end if;
+      elsif Value /= "" then
+         Config.Attributes.Insert (Name, Value);
+      end if;
+   end Set_Attribute;
 
    --------------
    -- Set_Path --

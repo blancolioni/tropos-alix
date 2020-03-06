@@ -8,8 +8,40 @@ with Tropos.Reader.Parser;
 
 package body Tropos.Reader is
 
+   procedure Parse_Attributes
+     (Config : in out Configuration);
+
    procedure Parse_Config
      (Config : out Configuration);
+
+   ----------------------
+   -- Parse_Attributes --
+   ----------------------
+
+   procedure Parse_Attributes
+     (Config : in out Configuration)
+   is
+      use Tropos.Reader.Parser;
+   begin
+      while Tok = Tok_Name loop
+         declare
+            Name : constant String := Tok_Text;
+         begin
+            Next;
+            if Tok = Tok_Equal then
+               Next;
+               if Tok = Tok_Name then
+                  Config.Set_Attribute (Name, Tok_Text);
+                  Next;
+               else
+                  Error ("missing attribute value");
+               end if;
+            else
+               Config.Set_Attribute (Name, "true");
+            end if;
+         end;
+      end loop;
+   end Parse_Attributes;
 
    ------------------
    -- Parse_Config --
@@ -27,6 +59,17 @@ package body Tropos.Reader is
             Config.Name :=
               Ada.Strings.Unbounded.To_Unbounded_String (Tok_Text);
             Next;
+
+            if Tok = Tok_Open_Paren then
+               Next;
+               Parse_Attributes (Config);
+               if Tok = Tok_Close_Paren then
+                  Next;
+               else
+                  Error ("missing ')'");
+               end if;
+            end if;
+
             if Tok = Tok_Equal then
                Next;
                Have_Body := True;

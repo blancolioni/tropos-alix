@@ -5,7 +5,9 @@ package Tropos.Reader.Parser is
    type Token is (Tok_Name,
                   Tok_Equal,
                   Tok_Open_Brace,
-                  Tok_Close_Brace);
+                  Tok_Close_Brace,
+                  Tok_Open_Paren,
+                  Tok_Close_Paren);
 
    procedure Open (Path : String);
    procedure Close;

@@ -83,6 +83,12 @@ package body Tropos.Reader.Parser is
                elsif Ch = '}' then
                   Curr_Token := Tok_Close_Brace;
                   return;
+               elsif Ch = '(' then
+                  Curr_Token := Tok_Open_Paren;
+                  return;
+               elsif Ch = ')' then
+                  Curr_Token := Tok_Close_Paren;
+                  return;
                elsif Ch = '=' then
                   Curr_Token := Tok_Equal;
                   return;
@@ -127,6 +133,7 @@ package body Tropos.Reader.Parser is
                   Curr_Text_Length := 0;
                   while Ch /= ' ' and then Ch /= '=' and then
                     Ch /= '{' and then Ch /= '}' and then
+                    Ch /= '(' and then Ch /= ')' and then
                     Ch /= ASCII.CR and then
                     Ch /= ASCII.HT and then
                     Ch /= '#' and then Ch /= ';' and then

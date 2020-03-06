@@ -1,5 +1,6 @@
 private with Ada.Containers.Vectors;
 private with Ada.Strings.Unbounded;
+private with WL.String_Maps;
 
 with Ada.Iterator_Interfaces;
 
@@ -16,6 +17,22 @@ package Tropos is
 
    function New_Config (Name : String) return Configuration;
    function New_Config (Index : Integer) return Configuration;
+
+   procedure Set_Attribute
+     (Config : in out Configuration;
+      Name   : String;
+      Value  : String);
+
+   function Attribute
+     (Config : Configuration;
+      Name   : String)
+      return String;
+
+   procedure Iterate_Attributes
+     (Config  : Configuration;
+      Process : not null access
+        procedure (Name : String;
+                   Value : String));
 
    procedure Add (To_Config : in out Configuration;
                   Child     : in     Configuration);
@@ -235,10 +252,14 @@ private
    package Configuration_Vector is
       new Ada.Containers.Vectors (Positive, Configuration_Access);
 
+   package Attribute_Maps is
+     new WL.String_Maps (String);
+
    type Configuration is tagged
       record
-         Name     : Ada.Strings.Unbounded.Unbounded_String;
-         Children : Configuration_Vector.Vector;
+         Name       : Ada.Strings.Unbounded.Unbounded_String;
+         Attributes : Attribute_Maps.Map;
+         Children   : Configuration_Vector.Vector;
       end record;
 
    type Constant_Reference_Type
@@ -252,11 +273,17 @@ private
          Position : Configuration_Vector.Cursor;
       end record;
 
-   Empty_Config : constant Configuration :=
-                    (Ada.Strings.Unbounded.Null_Unbounded_String,
-                     Configuration_Vector.Empty_Vector);
+   Empty_Config : constant Configuration := (others => <>);
 
    No_Element : constant Cursor :=
                   (Position => Configuration_Vector.No_Element);
+
+   function Attribute
+     (Config : Configuration;
+      Name   : String)
+      return String
+   is (if Config.Attributes.Contains (Name)
+       then Config.Attributes.Element (Name)
+       else "");
 
 end Tropos;
