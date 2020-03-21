@@ -127,6 +127,36 @@ package body Tropos.Reader.Parser is
                   end loop;
                   Curr_Token := Tok_Name;
                   return;
+               elsif Ch = '[' then
+                  Curr_Text_Length := 0;
+
+                  loop
+                     if End_Of_Line then
+                        Curr_Line_Number := Curr_Line_Number + 1;
+                        Ada.Text_IO.Get_Line
+                          (File, Curr_Line, Curr_Line_Length);
+                        if Curr_Line_Length > 0
+                          and then Curr_Line (Curr_Line_Length)
+                          = Character'Val (13)
+                        then
+                           Curr_Line_Length := Curr_Line_Length - 1;
+                        end if;
+
+                        Curr_Col_Index := 1;
+                        End_Of_Line := False;
+                        Ch := Character'Val (10);
+                     else
+                        Ch := Curr_Line (Curr_Col_Index);
+                        Curr_Col_Index := Curr_Col_Index + 1;
+                        exit when Ch = ']';
+                     end if;
+                     Curr_Text_Length := Curr_Text_Length + 1;
+                     Curr_Token_Text (Curr_Text_Length) := Ch;
+                  end loop;
+                  Curr_Token := Tok_Name;
+--                    Ada.Text_IO.Put_Line
+--                      ("[" & Curr_Token_Text (1 .. Curr_Text_Length) & "]");
+                  return;
                elsif Ch /= ' ' and then Ch /= Character'Val (9) and then
                  Ch /= ASCII.CR
                then
