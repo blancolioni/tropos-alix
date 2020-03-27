@@ -131,7 +131,7 @@ package body Tropos.Reader.Parser is
                   Curr_Text_Length := 0;
 
                   loop
-                     if End_Of_Line then
+                     if Curr_Col_Index > Curr_Line_Length then
                         Curr_Line_Number := Curr_Line_Number + 1;
                         Ada.Text_IO.Get_Line
                           (File, Curr_Line, Curr_Line_Length);
