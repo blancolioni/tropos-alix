@@ -106,7 +106,8 @@ package body Tropos.Reader.Parser is
                     Curr_Col_Index <= Curr_Line_Length + 1
                   loop
                      declare
-                        Escape : constant Boolean := Ch = '\';
+                        Escape : constant Boolean :=
+                                   Ch = Escape_Character;
                      begin
                         if Escape then
                            Ch := Curr_Line (Curr_Col_Index);

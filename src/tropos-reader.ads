@@ -26,4 +26,6 @@ package Tropos.Reader is
       Extend_Header : Boolean := True)
       return Configuration;
 
+   Escape_Character : Character := '\';
+
 end Tropos.Reader;
