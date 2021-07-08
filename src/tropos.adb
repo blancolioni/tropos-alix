@@ -954,12 +954,17 @@ package body Tropos is
    -- Value --
    -----------
 
-   function Value (Of_Config : Configuration)
-                   return Integer
+   function Value
+     (Of_Config : Configuration;
+      Default_Value : Integer := 0)
+      return Integer
    is
-      Result : constant String := Value (Of_Config);
    begin
-      return Integer'Value (Result);
+      if Of_Config.Children.Is_Empty then
+         return Default_Value;
+      else
+         return Integer'Value (Of_Config.Value);
+      end if;
    end Value;
 
    -----------

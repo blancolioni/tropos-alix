@@ -123,8 +123,10 @@ package Tropos is
    function Value (Of_Config : Configuration)
                    return String;
 
-   function Value (Of_Config : Configuration)
-                   return Integer;
+   function Value
+     (Of_Config     : Configuration;
+      Default_Value : Integer := 0)
+      return Integer;
 
    function Value (Of_Config     : Configuration;
                    Default_Value : Float := 0.0)
