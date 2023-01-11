@@ -91,6 +91,11 @@ package body Tropos.Reader.Json is
             if Current_Last < Current_Line'Last then
                Current_Line_Index := Current_Line_Index + 1;
             end if;
+            if Ada.Text_IO.End_Of_File then
+               Done := True;
+               return;
+            end if;
+
             Ada.Text_IO.Get_Line (Current_Line, Current_Last);
          exception
             when Ada.Text_IO.End_Error =>
@@ -315,7 +320,8 @@ package body Tropos.Reader.Json is
    procedure Skip_Whitespace is
    begin
       while not Done
-        and then Ada.Characters.Handling.Is_Space (Current_Character)
+        and then (Ada.Characters.Handling.Is_Space (Current_Character)
+                  or else Current_Character = Character'Val (9))
       loop
          Next_Character;
       end loop;
