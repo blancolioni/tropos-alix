@@ -369,35 +369,52 @@ package body Tropos.Reader is
       is
          Raw_Line : constant String :=
                       Ada.Text_IO.Get_Line (File);
-         Line     : constant String :=
-                      (if Raw_Line (Raw_Line'Last) < ' '
-                       then Raw_Line (Raw_Line'First .. Raw_Line'Last - 1)
-                       else Raw_Line);
-         Result : Line_Info (1 .. Line'Last);
-         Start  : Positive := 1;
-         Finish : Natural := 1;
-         Count  : Natural := 0;
+         Line         : constant String :=
+                          (if Raw_Line (Raw_Line'Last) < ' '
+                           then Raw_Line (Raw_Line'First .. Raw_Line'Last - 1)
+                           else Raw_Line);
+         Field        : String (Line'Range);
+         Result       : Line_Info (1 .. Line'Last);
+         Length       : Natural := 0;
+         Count        : Natural := 0;
+         Quoting      : Boolean := False;
+         End_Of_Field : Boolean := False;
       begin
          for I in Line'Range loop
-            if Line (I) = Separator
-              or else I = Line'Last
-            then
-               Finish := (if Line (I) = Separator
-                          then I - 1
-                          else I);
-               if not Header or else Finish >= Start then
-                  Count := Count + 1;
-                  Result (Count) :=
-                    To_Unbounded_String (Line (Start .. Finish));
-                  Start := I + 1;
+            if Quoting then
+               if Line (I) = '"' then
+                  Quoting := False;
+               else
+                  Length := Length + 1;
+                  Field (Length) := Line (I);
+               end if;
+            else
+               if Line (I) = Separator then
+                  End_Of_Field := True;
+               elsif Line (I) = '"' then
+                  Quoting := True;
+               else
+                  Length := Length + 1;
+                  Field (Length) := Line (I);
                end if;
             end if;
+
+            if End_Of_Field or else I = Line'Last then
+               Count := Count + 1;
+               Result (Count) :=
+                 To_Unbounded_String
+                   (if Header and then Length = 0
+                    then "h" & Integer'Image (-Count)
+                    else Field (1 .. Length));
+               Length := 0;
+               End_Of_Field := False;
+            end if;
          end loop;
-         if Start < Line'Last then
-            Count := Count + 1;
-            Result (Count) := To_Unbounded_String (Line (Start .. Line'Last));
-            Start := Line'Last + 1;
-         end if;
+         --  if Start < Line'Last then
+         --     Count := Count + 1;
+         --  Result (Count) := To_Unbounded_String (Line (Start .. Line'Last));
+         --     Start := Line'Last + 1;
+         --  end if;
 
          if Extend_Header then
             while Count < 10 and then Count < Result'Last loop
