@@ -59,6 +59,9 @@ package Tropos is
       Value          : String;
       Path_Separator : Character := '.');
 
+   function Has_Children (This : Configuration) return Boolean;
+   function Is_Simple_Value (This : Configuration) return Boolean;
+
    function Get (From_Config : Configuration;
                  Field_Name  : String)
                  return String;
@@ -287,5 +290,13 @@ private
    is (if Config.Attributes.Contains (Name)
        then Config.Attributes.Element (Name)
        else "");
+
+   function Has_Children (This : Configuration) return Boolean
+   is (not This.Children.Is_Empty);
+
+   function Is_Simple_Value (This : Configuration) return Boolean
+   is (This.Has_Children
+       and then This.Child_Count = 1
+       and then This.Children.First_Element.Children.Is_Empty);
 
 end Tropos;
